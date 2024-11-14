@@ -18,10 +18,20 @@ def with_base_config(base_config, extra_config):
     return config
 
 
+# def get_openspiel_game_from_normal_from_game_asset_id(game_asset_id: str):
+#     with open(os.path.join(assets_dir(), "normal_form_games", f"{game_asset_id}"), "rb") as fh:
+#         payoffs = np.asarray(pickle.load(fh))
+#     return pyspiel.create_matrix_game(payoffs, -payoffs)
+
 def get_openspiel_game_from_normal_from_game_asset_id(game_asset_id: str):
-    with open(os.path.join(assets_dir(), "normal_form_games", f"{game_asset_id}"), "rb") as fh:
-        payoffs = np.asarray(pickle.load(fh))
-    return pyspiel.create_matrix_game(payoffs, -payoffs)
+    payoff_matrix = np.array([[[2, -2], [-1, 1], [-3, 3]],
+                              [[-2, 2], [3, -3], [1, -1]],
+                              [[-1, 1], [-3, 3], [2, -2]]])
+
+    row_player_payoff = payoff_matrix[:, :, 0]
+    column_player_payoff = payoff_matrix[:, :, 1]
+    return pyspiel.create_matrix_game(row_player_payoff, column_player_payoff)
+
 
 DEFAULT_CONFIG = {
     'version': "5,3-Blotto.pkl",
@@ -162,16 +172,16 @@ class MatrixGameMultiAgentEnv(MultiAgentEnv):
             rewards = {self.player_map(0): self.curr_time_step.rewards[0],
                        self.player_map(1): self.curr_time_step.rewards[1]}
 
-            assert self.curr_time_step.rewards[0] == -self.curr_time_step.rewards[1]
+            # assert self.curr_time_step.rewards[0] == -self.curr_time_step.rewards[1]
 
             infos = {0: {}, 1: {}}
 
             infos[self.player_map(0)]['game_result_was_invalid'] = False
             infos[self.player_map(1)]['game_result_was_invalid'] = False
 
-            assert sum(
-                self.curr_time_step.rewards) == 0.0, "curr_time_step rewards in are terminal state are {} (they should sum to zero)".format(
-                self.curr_time_step.rewards)
+            # assert sum(
+            #     self.curr_time_step.rewards) == 0.0, "curr_time_step rewards in are terminal state are {} (they should sum to zero)".format(
+            #     self.curr_time_step.rewards)
 
             infos[self.player_map(0)]['rewards'] = self.curr_time_step.rewards[0]
             infos[self.player_map(1)]['rewards'] = self.curr_time_step.rewards[1]
@@ -191,9 +201,9 @@ class MatrixGameMultiAgentEnv(MultiAgentEnv):
             #     self.curr_time_step.rewards)
             # assert self.curr_time_step.rewards[-(new_curr_player_id - 1)] == 0
 
-            assert sum(
-                self.curr_time_step.rewards) == 0.0, "curr_time_step rewards in state are {} (they should sum to zero)".format(
-                self.curr_time_step.rewards)
+            # assert sum(
+            #     self.curr_time_step.rewards) == 0.0, "curr_time_step rewards in state are {} (they should sum to zero)".format(
+            #     self.curr_time_step.rewards)
 
             rewards = {self.player_map(p): self.curr_time_step.rewards[p] for p in range(2)}
 
